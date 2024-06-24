@@ -13,7 +13,7 @@ import SwiftUI
 class CustomARView: ARView{
     
     var arStatus: ARStatus
-    
+
     var worldMapURL: URL = {
         do {
             return try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
@@ -69,11 +69,14 @@ class CustomARView: ARView{
             )
             self.session.add(anchor: virtualObjectAnchor)
             
-            let modelEntity = createSphere(radius: 0.2)
-            // Add modelEntity and anchorEntity into the scene for rendering
-            let anchorEntity = AnchorEntity(anchor: virtualObjectAnchor)
-            anchorEntity.addChild(modelEntity)
-            self.scene.addAnchor(anchorEntity)
+            // You have to add modelEntity through the session (didAdd anchors) func,
+            // otherwise your model won't show up after you restart the app
+            // unless you press the load button twice
+//            let modelEntity = createSphere(radius: 0.2)
+//            // Add modelEntity and anchorEntity into the scene for rendering
+//            let anchorEntity = AnchorEntity(anchor: virtualObjectAnchor)
+//            anchorEntity.addChild(modelEntity)
+//            self.scene.addAnchor(anchorEntity)
         }
     }
     
@@ -113,17 +116,17 @@ class CustomARView: ARView{
         // ARWolrdMap contains only the ARAnchor data,
         // to restore the models, we need to turn it into AnchorEntity
         // and attach a ModelEntity to it
-        for anchor in self.session.currentFrame!.anchors{
-            if anchor.name == "Camera"{
-                let modelEntity = createSphere(radius: 0.2)
-                print("DEBUG: adding model to scene - ")
-                    
-                // Add modelEntity and anchorEntity into the scene for rendering
-                let anchorEntity = AnchorEntity(anchor: anchor)
-                anchorEntity.addChild(modelEntity)
-                self.scene.addAnchor(anchorEntity)
-            }
-        }
+//        for anchor in self.session.currentFrame!.anchors{
+//            if anchor.name == "Camera"{
+//                let modelEntity = createSphere(radius: 0.2)
+//                print("DEBUG: adding model to scene - ")
+//
+//                // Add modelEntity and anchorEntity into the scene for rendering
+//                let anchorEntity = AnchorEntity(anchor: anchor)
+//                anchorEntity.addChild(modelEntity)
+//                self.scene.addAnchor(anchorEntity)
+//            }
+//        }
     }
     
     func saveMap() {
@@ -168,13 +171,24 @@ extension CustomARView: ARSessionDelegate {
         }
     }
     
-//    func session(_ session: ARSession, didAdd anchors: [ARAnchor]) {
-//        print("did add anchor: \(anchors.count) anchors in total,name \(anchors.first?.name)")
-//        
-////        for anchor in anchors {
-////            addAnchorEntityToScene(anchor: anchor)
-////        }
-//    }
+    func session(_ session: ARSession, didAdd anchors: [ARAnchor]) {
+        let modelEntity = createSphere(radius: 0.2)
+        for anchor in anchors {
+            addAnchorEntityToScene(anchor: anchor)
+        }
+    }
+    
+    func addAnchorEntityToScene(anchor: ARAnchor) {
+        guard anchor.name == "Camera" else {
+            return
+        }
+
+        let modelEntity = createSphere(radius: 0.2)
+        // Add modelEntity and anchorEntity into the scene for rendering
+        let anchorEntity = AnchorEntity(anchor: anchor)
+        anchorEntity.addChild(modelEntity)
+        self.scene.addAnchor(anchorEntity)
+    }
     
     
 }
