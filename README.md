@@ -5,4 +5,3 @@ Take Shiru, Gaoping Huang, Yellow Jersey's codeds as reference
 
 Probably the latest version of AR persistence with RealityKit and SwiftUI
 
-Have to load twice to see the AR Objects when you restart the app. Hope someone could fix that.
